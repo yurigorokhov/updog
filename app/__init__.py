@@ -3,7 +3,7 @@ from pony.orm import *
 from pony.flask import Pony
 from flask_login import LoginManager
 from .models import db
-from .config import ProductionConfig
+from .config import DevelopmentConfig
 
 
 
@@ -11,7 +11,7 @@ from .config import ProductionConfig
 def create_app():
 
     app = Flask(__name__, instance_relative_config=False)
-    app.config.from_object(ProductionConfig)
+    app.config.from_object(DevelopmentConfig)
     Pony(app)
     login_manager = LoginManager(app)
     login_manager.login_view = 'login'

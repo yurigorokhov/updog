@@ -4,4 +4,18 @@
 
 <p>Hello {{ user.first_name }}</p>
 
+<ul>
+    {% for chat in chats %}
+    <li>id: {{ chat.id }} last_updated: {{ chat.last_updated }}
+        <ul>
+                {% for user in chat.users %}
+                <li>
+                    {{ user.first_name }} {{ user.last_name }}
+                </li>
+                {% endfor %}
+        </ul>
+    </li>
+    {% endfor %}
+  </ul>
+
 {% endblock %}
