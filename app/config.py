@@ -1,16 +1,32 @@
+import os
+
+
 class Config(object):
     DEGUB = False
     TESTING = False
     CSRF_ENABLED = True
     SECRET_KEY = '12345'
 
-    PONY = {
-        'provider': 'mysql',
-        'host': '0.0.0.0',
-        'user': 'root',
-        'passwd': 'PASSWORD',
-        'db': 'updog'
-    }
+    db_provider = os.environ.get('DB_PROVIDER', 'mysql').lower()
+    if db_provider == 'mysql':
+        PONY = {
+            'provider': os.environ.get('DB_PROVIDER', 'mysql'),
+            'host': os.environ.get('DB_HOST', '0.0.0.0'),
+            'user': os.environ.get('DB_USER', 'root'),
+            'passwd': os.environ.get('DB_PASSWORD', 'PASSWORD'),
+            'db': os.environ.get('DB_NAME', 'updog')
+        }
+    elif db_provider == 'postgres':
+        PONY = {
+                'provider': os.environ.get('DB_PROVIDER', 'mysql'),
+                'host': os.environ.get('DB_HOST', '0.0.0.0'),
+                'user': os.environ.get('DB_USER', 'root'),
+                'password': os.environ.get('DB_PASSWORD', 'PASSWORD'),
+                'database': os.environ.get('DB_NAME', 'updog')
+        }
+    else:
+        raise ValueError(f'Unknown database provider: {db_provider}')
+        
 
 
 class ProductionConfig(Config):

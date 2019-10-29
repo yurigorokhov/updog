@@ -84,7 +84,7 @@ def chats():
 def index():
     user_id = request.args.get('user_id')
     user = db.User[user_id]
-    return render_template('index.html', user=user)
+    return render_template('index.html', user=user, chats=user.chats)
 
 
 
