@@ -7,7 +7,6 @@
     <header>
         <div id="header-sidebar">
             <div id="self-image" class="head-img-wrap">
-                <img class="icon-img" src="http://lorempixel.com/output/animals-q-c-284-204-8.jpg" alt="">
             </div>
             <div id="header-sidebar-icons">
                 <ul>
@@ -174,7 +173,7 @@
                         </form>
                     </div>
                 </div>
-                <button data-click="send-message" class="svg-wrap" onclick="submitNewMessage()">
+                <button data-click="send-message" data-chat_id="{{ chat.id }}" data-user_id="{{ user.id }}" class="svg-wrap" onclick="submitNewMessage()">
                     <svg id="send-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                         <path fill="#263238" fill-opacity=".45"
                             d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z">

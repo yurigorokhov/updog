@@ -63,5 +63,13 @@ for(let i =0; i < conversationElements.length; i++){
 }
 
 
+
+const submitNewMessage = () =>{
+    body = document.getElementById('new-message').value
+    console.log(body)
+    
+}
+
+
     
 setHeaderImage()

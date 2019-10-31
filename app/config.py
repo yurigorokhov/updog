@@ -13,7 +13,7 @@ class Config(object):
             'provider': os.environ.get('DB_PROVIDER', 'mysql'),
             'host': os.environ.get('DB_HOST', '0.0.0.0'),
             'user': os.environ.get('DB_USER', 'root'),
-            'passwd': os.environ.get('DB_PASSWORD', 'PASSWORD'),
+            'passwd': os.environ.get('DB_PASSWORD', 'G00semansql'),
             'db': os.environ.get('DB_NAME', 'updog')
         }
     elif db_provider == 'postgres':

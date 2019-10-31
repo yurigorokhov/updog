@@ -2,8 +2,9 @@ from flask import current_app as app
 from . import db
 from flask import render_template, request, redirect, url_for, jsonify, Response
 from pony.orm import *
-from .forms import LoginForm
+from .forms import LoginForm, RegistrationForm
 from flask_login import current_user, login_user, login_required, logout_user
+from werkzeug.security import generate_password_hash
 
 
 set_sql_debug(True)
@@ -53,8 +54,7 @@ def messages(chat_id):
         body = r['body']
 
         with db_session:
-            message = db.Message(body=body, sender_id=user_id, chat=chat_id)
-
+            message = db.Message(body=body, sender_id=user, chat=chat)
             return "Message successfully added"
         
 
@@ -62,22 +62,29 @@ def messages(chat_id):
 def chats():
     user_id = request.args.get('user_id')
 
+    if not user_id:
+        return "Invalid request.  No user id provided"
+
+    try:
+        user = db.User[user_id]
+    except ObjectNotFound:
+        return("User Does not Exsist")
+
 
     if request.method == 'GET':
-        try:
-            user = db.User[user_id]
-        except ObjectNotFound:
-            return("User Does not Exsist")
-
         chats = []
         for c in user.chats:
             chats.append({"id": c.id,
                             "last_updated": c.last_updated})
-
         return jsonify(chats)
 
+
     if request.method == 'POST':
-        pass
+        with db_session:
+            chat = db.Chat(chat_name = user.full_name, creator_id = user.id)
+            commit()
+            user.chats.add(db.Chat[chat.id])
+            return "Success!"
 
 
 @app.route('/index', methods=['GET'])
@@ -106,6 +113,7 @@ def users():
             return "User successfully added."
 
 
+@db_session
 @app.route('/chat', methods=['GET'])
 def home():
     user_id = request.args.get('user_id')
@@ -117,18 +125,31 @@ def home():
 
     chats = []
     for c in user.chats:
+        
+        try:
+            last_message = c.messages.select().order_by(lambda m: desc(m.date_created)).limit(1)[0].body
+        except IndexError:
+            last_message = "Tap to send a message"
         chats.append({"id": c.id, 
                       "last_updated": c.last_updated,
-                      "last_message": c.messages.select().order_by(lambda m: desc(m.date_created)).limit(1)[0].body,
+                      "last_message": last_message,
                       "chat_name": user.first_name})
     
     return render_template('chat.html', chats=chats, user=user)
     
 
+@db_session
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('chat'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = db.User(email=form.email.data, first_name=form.first_name.data, last_name=form.last_name.data, password=generate_password_hash(form.password.data))
+        return redirect(url_for('login'))
+    return render_template('register.html', form=form)
 
 
-
-# User log in and log out.  Not yet fully implemented
 
 @db_session
 @app.route('/login', methods=['GET', 'POST'])
@@ -137,10 +158,13 @@ def login():
     if form.validate_on_submit():
         email = form.email.data
         password = form.password.data
-        possible_user = db.User.get(email=email)
-        if possible_user.password == password:
-            login_user(possible_user)
+        user = db.User.get(email=email)
+        print(user.user_id)
+        if user.check_password_hash(form.password.data):
+            login_user(user)
             return "It worked!"
+        else:
+            return "Did not work"
     return render_template('login.html', form=form)
 
 
