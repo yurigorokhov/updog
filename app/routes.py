@@ -55,7 +55,16 @@ def messages(chat_id):
 
         with db_session:
             message = db.Message(body=body, sender_id=user, chat=chat)
-            return "Message successfully added"
+            commit()
+            return jsonify(
+                {
+                    'id': message.id,
+                    'body': message.body,
+                    'sender_first': message.sender_id.first_name,
+                    'sender_last': message.sender_id.last_name,
+                    'time-stamp': message.date_created
+                }
+            )
         
 
 @app.route('/api/chats', methods=['GET', 'POST'])
@@ -141,8 +150,8 @@ def home():
 @db_session
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('chat'))
+    #if current_user.is_authenticated:
+    #    return redirect(url_for('chat'))
     form = RegistrationForm()
     if form.validate_on_submit():
         user = db.User(email=form.email.data, first_name=form.first_name.data, last_name=form.last_name.data, password=generate_password_hash(form.password.data))

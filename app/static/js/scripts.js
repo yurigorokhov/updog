@@ -51,8 +51,15 @@ const retrieveMessages = (req_info) => {
 
 
 const convoClick = (event) => {
-    const clicked = event.currentTarget
-    retrieveMessages(clicked.dataset)
+    
+    // populate form chat_id input
+    const clicked = event.currentTarget;
+    const dataAttributes = clicked.dataset;
+    const chat_id = dataAttributes.chat_id;
+    document.querySelector('#sndr-chat_id').value = chat_id;
+    
+    // retrieve messages for clicked conversation
+    retrieveMessages(dataAttributes);
 }
 
 
@@ -64,10 +71,32 @@ for(let i =0; i < conversationElements.length; i++){
 
 
 
-const submitNewMessage = () =>{
-    body = document.getElementById('new-message').value
-    console.log(body)
-    
+const submitNewMessage = () => {
+
+    // collect data needed for message POST request
+    const newMessage = document.querySelector('#new-message').value;
+    const chat_id = document.querySelector('#sndr-chat_id').value;
+    const user_id = document.querySelector('#sndr-name').value;
+
+    // make POST request to create the message
+    const url = `/api/chats/${chat_id}/messages?user_id=${user_id}`;
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            'body': newMessage
+        })
+    })
+    .then(res => {
+        return res.json()
+    })
+    .then(data => {
+        wrapMessages(data.body, data['time-stamp'])
+        document.querySelector('#new-message').value = '';
+        document.querySelector(`div.convo[data-chat_id="${chat_id}"] p.mssg`).innerHTML = data.body
+    })
 }
 
 
