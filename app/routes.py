@@ -30,8 +30,9 @@ def messages(chat_id):
         if user not in chat.users:
             return "User not in this char group."
         else:  
-            return {
-                m.id: {
+            return jsonify([
+                {
+                    'id': m.id,
                     'body': m.body,
                     'sender_first': m.sender_id.first_name,
                     'sender_last': m.sender_id.last_name,
@@ -39,7 +40,7 @@ def messages(chat_id):
 
                 }
                 for m in chat.messages
-            }
+            ])
 
     # post message to database
 
@@ -86,6 +87,43 @@ def index():
     user = db.User[user_id]
     return render_template('index.html', user=user, chats=user.chats)
 
+
+@app.route('/api/users', methods=['GET', 'POST'])
+def users():
+    if request.method == 'POST':
+        if not request.content_type == 'application/json':
+            return "Invalid request. Content type must be 'application/json'"
+
+        r = request.get_json()
+        first_name = r['first_name']
+        last_name = r['last_name']
+        email = r['email']
+        password = r['password']
+
+        with db_session:
+            user = db.User(first_name=first_name, last_name=last_name, email=email, password=password)
+
+            return "User successfully added."
+
+
+@app.route('/chat', methods=['GET'])
+def home():
+    user_id = request.args.get('user_id')
+
+    try:
+        user = db.User[user_id]
+    except ObjectNotFound:
+        return("User Does not Exsist")
+
+    chats = []
+    for c in user.chats:
+        chats.append({"id": c.id, 
+                      "last_updated": c.last_updated,
+                      "last_message": c.messages.select().order_by(lambda m: desc(m.date_created)).limit(1)[0].body,
+                      "chat_name": user.first_name})
+    
+    return render_template('chat.html', chats=chats, user=user)
+    
 
 
 

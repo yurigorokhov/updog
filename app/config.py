@@ -18,11 +18,11 @@ class Config(object):
         }
     elif db_provider == 'postgres':
         PONY = {
-                'provider': os.environ.get('DB_PROVIDER', 'mysql'),
-                'host': os.environ.get('DB_HOST', '0.0.0.0'),
-                'user': os.environ.get('DB_USER', 'root'),
-                'password': os.environ.get('DB_PASSWORD', 'PASSWORD'),
-                'database': os.environ.get('DB_NAME', 'updog')
+            'provider': os.environ.get('DB_PROVIDER', 'mysql'),
+            'host': os.environ.get('DB_HOST', '0.0.0.0'),
+            'user': os.environ.get('DB_USER', 'root'),
+            'password': os.environ.get('DB_PASSWORD', 'PASSWORD'),
+            'database': os.environ.get('DB_NAME', 'updog')
         }
     else:
         raise ValueError(f'Unknown database provider: {db_provider}')
