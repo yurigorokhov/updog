@@ -1,3 +1,6 @@
+let currentChatId = null;
+let currentUserId = null;
+const loadedMessages = new Set();
 
 
 const setHeaderImage = () => {
@@ -35,14 +38,25 @@ const wrapMessages = (message, time) => {
 
 
 const addMessages = (messages) =>{
-    let pageElement = document.querySelector('#main-chat-wrap');
-    pageElement.innerHTML = ''
-    messages.forEach(message => wrapMessages(message.body, message["time-stamp"]))
-
+    for(const message of messages) {
+        if(!loadedMessages.has(message.id)) {
+            loadedMessages.add(message.id);
+            wrapMessages(message.body, message["time-stamp"]);
+        }
     }
 
-const retrieveMessages = (req_info) => {
-    const url = `/api/chats/${req_info.chat_id}/messages?user_id=${req_info.user_id}`
+}
+
+
+setInterval(() => {
+    if(currentChatId !== null && currentUserId !== null) {
+        retrieveMessages(currentChatId, currentUserId);
+    }
+}, 2000);
+
+
+const retrieveMessages = (chat_id, user_id) => {
+    const url = `/api/chats/${chat_id}/messages?user_id=${user_id}`
     fetch(url, {
         method: 'GET'
     }).then(res => res.json())
@@ -55,11 +69,17 @@ const convoClick = (event) => {
     // populate form chat_id input
     const clicked = event.currentTarget;
     const dataAttributes = clicked.dataset;
-    const chat_id = dataAttributes.chat_id;
-    document.querySelector('#sndr-chat_id').value = chat_id;
+    currentChatId = dataAttributes.chat_id;
+    currentUserId = dataAttributes.user_id;
+    document.querySelector('#sndr-chat_id').value = currentChatId;
     
+    // clear out messages
+    let pageElement = document.querySelector('#main-chat-wrap');
+    pageElement.innerHTML = ''
+    loadedMessages.clear();
+
     // retrieve messages for clicked conversation
-    retrieveMessages(dataAttributes);
+    retrieveMessages(currentChatId, currentUserId);
 }
 
 
